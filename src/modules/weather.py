@@ -5,10 +5,10 @@ class WeatherModule(ControlModule):
         self.module_config = {
             "module_name":"weather",
             "display_name":"Weather",
-            "polling_frequency_seconds":1800
+            "polling_period_seconds":60
             }
 
     def get_data(self):
-        print(self.module_config['display_name'])
+        return "PLACEHOLDER weather data"
 
 instance = WeatherModule()

@@ -5,10 +5,10 @@ class AutomationModule(ControlModule):
         self.module_config = {
             "module_name":"automation",
             "display_name":"Automation",
-            "polling_frequency_seconds":30
+            "polling_period_seconds":30
             }
 
     def get_data(self):
-        print(self.module_config['module_name'])
+        return "PLACEHOLDER automation data"
 
 instance = AutomationModule()
