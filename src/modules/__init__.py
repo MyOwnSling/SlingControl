@@ -7,6 +7,14 @@ class ControlModule(object):
     def get_data(self):
         raise NotImplementedError
 
+    class AlertItem(object):
+        """ Class for grouping data pertaining to an alert
+        """
+        def __init__(self, measurand, value, msg=None):
+            self.measurand = measurand  # Item being measured
+            self.value = value  # Value of measurand
+            self.msg = msg  # Alert message (why is this measured value important)
+
 # Initialize placeholder variables, mostly so the linter doesn't complain (value(s) will be populated by code below)
 instance = None
 

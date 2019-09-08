@@ -1,0 +1,3 @@
+**/*.pyc
+src/modules/*_custom.py
+.vscode

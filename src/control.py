@@ -15,6 +15,8 @@ def run_job(module_instance, queue):
 
     # Record polling period into new, easier to reference var
     period = module_instance.module_config['polling_period_seconds']
+    if period <= 0:  # Allow for quick disabling of a module (debug)
+        return
 
     # Main thread loop
     while True:
@@ -23,7 +25,10 @@ def run_job(module_instance, queue):
 
         # Do some work
         data = module_instance.get_data()  # Real work happens here (module data gathering)
-        queue.put((module_instance.module_config, data, time.strftime("%H.%M.%S")))
+        queue.put((
+            module_instance.module_config, 
+            data, 
+            time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime(start_time))))
 
         # Record the elapsed (real) time and sleep for any remaining time in our period. 
         # This technique allows us to execute roughly "every x seconds" as opposed to 
@@ -39,7 +44,13 @@ def handle_data(data):
      and pass it on to the UI and/or other relevant location, potentially
      based on the nature of the data.
     """
-    print(data)
+
+    module_data = data[1]
+    alert_items = module_data[1](module_data[0])
+    for alert in alert_items:
+        print("ALERT: {} ({}) - {}".format(alert.measurand, alert.value, alert.msg))
+    
+    print(module_data)
 
 
 def main():
