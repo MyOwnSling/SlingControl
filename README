@@ -1,2 +1,4 @@
-WIP
 
+cd SlingControl
+docker build . -f docker/Dockerfile -t controller
+docker run -it --rm controller python3 /usr/local/bin/app/control.py
