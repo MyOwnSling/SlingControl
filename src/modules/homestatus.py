@@ -5,7 +5,7 @@ class _HomeStatusModule(ControlModule):
         self.module_config = {
             "module_name":"homestatus",
             "display_name":"Home Status",
-            "polling_period_seconds":10
+            "polling_period_seconds":-1
             }
 
     def get_data(self):

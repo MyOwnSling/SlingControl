@@ -5,7 +5,7 @@ class _AutomationModule(ControlModule):
         self.module_config = {
             "module_name":"automation",
             "display_name":"Automation",
-            "polling_period_seconds":30
+            "polling_period_seconds":-1
             }
 
     def get_data(self):

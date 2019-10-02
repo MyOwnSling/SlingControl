@@ -5,7 +5,7 @@ class _WeatherModule(ControlModule):
         self.module_config = {
             "module_name":"weather",
             "display_name":"Weather",
-            "polling_period_seconds":60
+            "polling_period_seconds":-1
             }
 
     def get_data(self):
