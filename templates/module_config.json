@@ -1,0 +1,5 @@
+{
+    "module_name":"modulename",
+    "display_name":"Module Name",
+    "polling_frequency_seconds":30
+}

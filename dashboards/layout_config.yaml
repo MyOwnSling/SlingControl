@@ -1,0 +1,43 @@
+details:
+    page_title: Home Status
+layout:
+    - row_1_of_2:
+        - col_1_of_4 flip-time-6:
+            - tile_template: big_value
+              tile_id: weather_main
+              title: Temperature
+              classes:
+        - col_2_of_4 flip-time-6:
+            - tile_template: listing
+              tile_id: weather_precipitation
+              title: Precipitation
+              classes:
+            - tile_template: line_chart
+              tile_id: weather_precipitation_precision
+              title: Precipitation - Impending
+              classes:
+        # - col_1_of_4:
+        #     - tile_template: text
+        #       tile_id: weather_misc
+        #       title: Weather Info
+        #       classes:
+        - col_1_of_4 flip-time-6:
+            - tile_template: listing
+              tile_id: weather_alerts
+              title: Weather Alerts
+              classes:
+            - tile_template: text
+              tile_id: weather_misc
+              title: Weather Info
+              classes:
+
+    - row_1_of_2:
+        - col_1_of_4 flip-time-3:
+            - tile_template: listing
+              tile_id: network_status
+              title: Network Status
+              classes:
+            - tile_template: big_value
+              tile_id: network_status_gfi
+              title: GFI Status
+              classes:

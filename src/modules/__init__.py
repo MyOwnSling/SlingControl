@@ -15,6 +15,13 @@ class ControlModule(object):
             self.value = value  # Value of measurand
             self.msg = msg  # Alert message (why is this measured value important)
 
+    class ReportItem(object):
+        """ Class for grouping data to be included in a report
+        """
+        def __init__(self, item, value):
+            self.item = item  # Item being reported
+            self.value = value  # Value of the item
+
 # Initialize placeholder variables, mostly so the linter doesn't complain (value(s) will be populated by code below)
 instance = None
 

@@ -23,7 +23,8 @@ class _HomeStatusModule(ControlModule):
         """
 
         alert_items = []
+        report_items = dict()
 
-        return alert_items
+        return (report_items, alert_items)
 
 instance = _HomeStatusModule()

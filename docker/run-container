@@ -1,0 +1,80 @@
+#!/bin/bash
+
+DIR="$( cd "$(dirname "$0")" && pwd )"
+cd "${DIR}"/..
+CAR_API_URL=""
+IMAGE_NAME='homeautomation'
+CONTAINER_NAME='controller'
+DB_FILE="${1}"
+PASSWORD=''
+if [ ! -f "${DB_FILE}" ]; then
+    echo "Password database file missing or does not exist"
+    exit 2
+fi
+
+get_pass()
+{
+    PASS="$( printf "$PASSWORD" | keepassxc-cli show -a Password "${DB_FILE}" "$1" )"
+    if [ "$?" != 0 ]; then
+        >&2 echo "Failed to get password for $1"
+        unset PASS
+        exit 3
+    fi
+    echo "$PASS" | tail -n1
+    unset PASS
+}
+
+p_prompt='Database password: '
+while [ -z "$PASSWORD" ]; do
+    read -s -p "$p_prompt" PASSWORD
+    p_prompt='Database password (required): '
+    echo
+done
+
+# Get necessary info
+TB_API_KEY="$( hexdump -n 16 -e '4/4 "%08X" 1 "\n"' /dev/random )" # Generate tipboard API key
+CAR_API_KEY="$( get_pass 'CarAPIKey' )"
+CAR_API_REFRESH="$( get_pass 'CarAPIRefresh' )"
+PB_API_KEY="$( get_pass 'PBAPIKey' )"
+WEATHER_API_KEY="$( get_pass 'WeatherAPIKey' )"
+WEATHER_LOCATION="$( get_pass 'WeatherLocation' )"
+unset PASSWORD
+
+# Do some dashboard-specific config
+./dashboards/init_dashboards.sh "$TB_API_KEY" || { echo "Dashboard setup failed"; exit 7; }
+
+
+# Start the container, building the image first if it doesn't already exist
+docker inspect "$IMAGE_NAME" 2>&1 > /dev/null
+[ "$?" == 0 ] && docker image remove "$IMAGE_NAME"
+docker build . -f docker/Dockerfile -t "$IMAGE_NAME"
+if [ "$?" != 0 ]; then
+    echo "Failed to build container"
+    exit 2
+fi
+# If the container already exists, remove
+docker inspect "$CONTAINER_NAME" 2>&1 > /dev/null
+if [ "$?" == 0 ]; then
+    docker rm "$CONTAINER_NAME"
+fi
+docker run -d --rm \
+    --name="$CONTAINER_NAME" \
+    -e CAR_API_KEY="$CAR_API_KEY" \
+    -e CAR_REFRESH_TOKEN="$CAR_API_REFRESH" \
+    -e PB_AUTH="$PB_API_KEY" \
+    -e RECIPIENTS='{"pb":{}}' \
+    -e DS_API_KEY="$WEATHER_API_KEY" \
+    -e DS_WEATHER_LOCATION="$WEATHER_LOCATION" \
+    -e CAR_API_URL="$CAR_API_URL" \
+    -e TB_API_KEY="$TB_API_KEY" \
+    --expose 7272 \
+    "$IMAGE_NAME"
+ret="$?"
+
+# Clear info
+unset CAR_API_KEY
+unset CAR_API_REFRESH
+unset PB_API_KEY
+unset WEATHER_API_KEY
+
+exit "$ret"

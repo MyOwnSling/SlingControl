@@ -3,8 +3,12 @@ import time
 from threading import Thread
 from queue import Queue
 
+from dashboards import dashboard
 from modules import module_list, ControlModule
-from notifiers import notifier_list#, Notifier
+try:
+    from notifiers import notifier_list#, Notifier
+except ValueError as vex:
+            print("Notifier error: " + str(vex))
 
 def run_job(module_instance, queue):
     """ Function used to wrap module functions for threading
@@ -51,11 +55,15 @@ def handle_data(data):
     """
 
     module_data = data[1]
-    alert_items = module_data[1](module_data[0])
+    alert_items = module_data[1](module_data[0], dashboard)
+
     for alert in alert_items:
         print("ALERT: {} ({}) - {}".format(alert.measurand, alert.value, alert.msg))
-        for notifier in notifier_list:
-            notifier.notify(alert.measurand, "{}{}{}".format(alert.value, os.linesep, alert.msg))
+        try:
+            for notifier in notifier_list:
+                notifier.notify(alert.measurand, "{}{}{}".format(alert.value, os.linesep, alert.msg))
+        except ValueError as vex:
+            print("Notifier error: " + str(vex))
 
 
 def main():

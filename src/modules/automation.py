@@ -23,7 +23,8 @@ class _AutomationModule(ControlModule):
         """
 
         alert_items = []
+        report_items = dict()
 
-        return alert_items
+        return (report_items, alert_items)
 
 instance = _AutomationModule()
