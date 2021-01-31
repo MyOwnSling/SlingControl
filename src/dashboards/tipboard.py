@@ -48,7 +48,7 @@ class _TipboardDash(Dashboard):
             pass
     
     def _update_config(self, config_type, tile_key, config_data):
-        response = requests.post(url = self.assembled_url + "/{config_type}/{tile_key}", data = config_data)
+        response = requests.post(url = self.assembled_url + f"/{config_type}/{tile_key}", data = config_data)
         if response.status_code != 200:
             # TODO: Handle bad post
             pass
@@ -193,18 +193,17 @@ class _TipboardDash(Dashboard):
         
         # Put the data into a single dict for json dumping
         date_data = {
-            "title": "",
-            "description": "",
-            "big-value": f"{day_of_week}\n{month_word} {day}\n{year}"
+            "text": f"{day_of_week}\n{month_word} {day}\n{year}" # Newlines don't appear to be respected and are stripped
         }
 
         # Dump data separately as json because that's what tipboard wants
         data = {
-            "tile": "big_value",
+            "tile": "text",
             "key": "date",
             "data": json.dumps(date_data)
         }
 
+        self._update_config("tileconfig", "date", 'value={"font_size": 84}') # Font size tuned for a specific display
         self._update(data)
 
         # Put the data into a single dict for json dumping
