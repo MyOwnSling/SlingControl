@@ -1,4 +1,11 @@
 
-cd SlingControl
-docker build . -f docker/Dockerfile -t controller
-docker run -it --rm controller python3 /usr/local/bin/app/control.py
+Requirements:
+* Docker
+* keepassxc
+** Required passwords must be popluated in a keepass database
+
+To get started:
+* cd SlingControl/docker
+* ./run-container <path to keepass database (kdbx file)>
+** Enter database password
+* Open browser to localhost:7272

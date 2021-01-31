@@ -11,6 +11,10 @@ if [ ! -f "${DB_FILE}" ]; then
     echo "Password database file missing or does not exist"
     exit 2
 fi
+if [ "$2" == '-c' ]; then
+    echo "Clean; running full rebuild"
+    CLEAN=TRUE
+fi
 
 get_pass()
 {
@@ -45,18 +49,21 @@ unset PASSWORD
 
 
 # Start the container, building the image first if it doesn't already exist
-docker inspect "$IMAGE_NAME" 2>&1 > /dev/null
-[ "$?" == 0 ] && docker image remove "$IMAGE_NAME"
-docker build . -f docker/Dockerfile -t "$IMAGE_NAME"
-if [ "$?" != 0 ]; then
-    echo "Failed to build container"
-    exit 2
+if [ "$CLEAN" ]; then
+    docker inspect "$IMAGE_NAME" 2>&1 > /dev/null
+    [ "$?" == 0 ] && docker image remove "$IMAGE_NAME"
+    docker build . -f docker/Dockerfile -t "$IMAGE_NAME"
+    if [ "$?" != 0 ]; then
+        echo "Failed to build container"
+        exit 2
+    fi
 fi
 # If the container already exists, remove
 docker inspect "$CONTAINER_NAME" 2>&1 > /dev/null
 if [ "$?" == 0 ]; then
     docker rm "$CONTAINER_NAME"
 fi
+echo "Note: a 'Error: No such object:' message is expected and not an issue"
 docker run -d --rm \
     --name="$CONTAINER_NAME" \
     -e CAR_API_KEY="$CAR_API_KEY" \
@@ -67,6 +74,7 @@ docker run -d --rm \
     -e DS_WEATHER_LOCATION="$WEATHER_LOCATION" \
     -e CAR_API_URL="$CAR_API_URL" \
     -e TB_API_KEY="$TB_API_KEY" \
+    -p 7272:7272 \
     --expose 7272 \
     "$IMAGE_NAME"
 ret="$?"
