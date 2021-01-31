@@ -58,7 +58,7 @@ unset PASSWORD
 if [ "$CLEAN" ]; then
     docker inspect "$IMAGE_NAME" 2>&1 > /dev/null
     [ "$?" == 0 ] && docker image remove "$IMAGE_NAME"
-    docker build . -f docker/Dockerfile -t "$IMAGE_NAME"
+    docker build . -f docker/Dockerfile -t "$IMAGE_NAME" --build-arg TZ="$(cat /etc/timezone)"
     if [ "$?" != 0 ]; then
         echo "Failed to build container"
         exit 2

@@ -6,8 +6,15 @@ RUN apk add --update redis supervisor python-dev \
     py-pip \
     build-base \
     python3 \
+    tzdata \
   && pip install virtualenv \
   && rm -rf /var/cache/apk/* 
+
+# Do timezone stuff
+ARG TZ=America/Denver
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+  echo $TZ > /etc/timezone && \
+  apk del tzdata
 
 COPY requirements.txt /tmp/
 RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt && rm /tmp/requirements.txt

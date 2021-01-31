@@ -1,4 +1,5 @@
 from . import Dashboard
+from datetime import datetime
 import requests
 import os
 import json
@@ -35,6 +36,7 @@ class _TipboardDash(Dashboard):
         def _assign(item): return home_Data[item] if item in home_Data else ""
 
         self._update_network_status(_assign("internet"), _assign("gateway"), _assign("gfi"))
+        self._update_datetime()
 
     def update_misc(self):
         pass
@@ -52,7 +54,7 @@ class _TipboardDash(Dashboard):
             pass
 
     def _update_temp(self, cur_temp, high_temp, low_temp):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         temp_data = {
             "title": "Temperature",
             "description": "",
@@ -73,7 +75,7 @@ class _TipboardDash(Dashboard):
         self._update(data)
 
     def _update_precip_current(self, ptype, probability, max_intensity):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         prob = probability if not probability == "" else "No"
         pt = ptype if not ptype == "" else "precipitation"
         maxp = max_intensity if not max_intensity == "" else "0"
@@ -95,7 +97,7 @@ class _TipboardDash(Dashboard):
         self._update(data)
     
     def _update_precip_hourly(self, ptype, minute_array):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         pt = ptype if not ptype == "None" else "No Precipitation"
         p_data = {
             "subtitle": f"{pt}",
@@ -115,7 +117,7 @@ class _TipboardDash(Dashboard):
         self._update(data)
 
     def _update_general_weather_info(self, day_info, week_info):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         info_data = {
             "text": f"Today: {day_info}\n\nThis week: {week_info}"
         }
@@ -130,7 +132,7 @@ class _TipboardDash(Dashboard):
         self._update(data)
 
     def _update_weather_alerts(self, alert_list):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         a_data = {
             "items": alert_list
         }
@@ -145,7 +147,7 @@ class _TipboardDash(Dashboard):
         self._update(data)
 
     def _update_network_status(self, internet, gateway, gfi):
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         net_data = {
             "items": [
                 f"Internet: {internet}",
@@ -163,7 +165,7 @@ class _TipboardDash(Dashboard):
 
         self._update(data)
 
-        # Put the temp data into a single dict for json dumping
+        # Put the data into a single dict for json dumping
         net_data = {
             "title": "GFI",
             "description": "",
@@ -175,6 +177,48 @@ class _TipboardDash(Dashboard):
             "tile": "big_value",
             "key": "network_status_gfi",
             "data": json.dumps(net_data)
+        }
+
+        self._update(data)
+
+    def _update_datetime(self):
+        # Put the temp data into a single dict for json dumping
+        now = datetime.now()
+        day = now.strftime("%d")
+        day_of_week = now.strftime("%A")
+        # month_num = now.strftime("%m")
+        month_word = now.strftime("%b")
+        year = now.strftime("%Y")
+        time = now.strftime("%H:%M")
+        
+        # Put the data into a single dict for json dumping
+        date_data = {
+            "title": "",
+            "description": "",
+            "big-value": f"{day_of_week}\n{month_word} {day}\n{year}"
+        }
+
+        # Dump data separately as json because that's what tipboard wants
+        data = {
+            "tile": "big_value",
+            "key": "date",
+            "data": json.dumps(date_data)
+        }
+
+        self._update(data)
+
+        # Put the data into a single dict for json dumping
+        time_data = {
+            "title": "",
+            "description": "",
+            "big-value": time
+        }
+
+        # Dump data separately as json because that's what tipboard wants
+        data = {
+            "tile": "big_value",
+            "key": "time",
+            "data": json.dumps(time_data)
         }
 
         self._update(data)
