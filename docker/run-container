@@ -36,7 +36,13 @@ while [ -z "$PASSWORD" ]; do
 done
 
 # Get necessary info
-TB_API_KEY="$( hexdump -n 16 -e '4/4 "%08X" 1 "\n"' /dev/random )" # Generate tipboard API key
+if [ "$CLEAN" ]; then
+    # Clean run; generate anew
+    TB_API_KEY="$( hexdump -n 16 -e '4/4 "%08X" 1 "\n"' /dev/random )" # Generate tipboard API key
+else
+    # Using the same image; use the value from the last run
+    TB_API_KEY="$( grep -E '^API_KEY = ' "${DIR}/../dashboards/settings-local.py" | awk '{print $3}' | tr -d "'" )"
+fi
 CAR_API_KEY="$( get_pass 'CarAPIKey' )"
 CAR_API_REFRESH="$( get_pass 'CarAPIRefresh' )"
 PB_API_KEY="$( get_pass 'PBAPIKey' )"

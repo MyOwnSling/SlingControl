@@ -1,0 +1,26 @@
+FROM redis:5.0.8-alpine
+#FROM alpine:latest
+
+# Add system packages
+#RUN apk add bash python3 python-dev python-virtualenv redis-server
+#RUN apk add bash python3 python2
+RUN apk add bash python2 py-pip python3
+
+# Add python packages (after updating pip)
+COPY requirements.txt /tmp/
+RUN pip install --upgrade pip && pip install requests==1.2.3 tipboard
+RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
+# Add app content
+RUN mkdir -p /usr/local/bin/app/dashboards
+COPY src/ /usr/local/bin/app/
+RUN mkdir -p /tmp/dashboards/
+COPY dashboards/* /tmp/dashboards/
+
+# Start dashboard(s)
+RUN /tmp/dashboards/init_dashboards.sh
+#COPY ~/.tipboard/settings-local.py ~/.tipboard/
+
+# Set entrypoint
+# ENTRYPOINT [ "python3", "/usr/local/bin/app/control.py" ]
+ENTRYPOINT [ "tail", "-f", "/dev/null" ]
