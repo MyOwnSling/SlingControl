@@ -1,6 +1,7 @@
 FROM alpine:latest
-# FROM alpine:3.8 # Fixes non-zero return (139) during the next RUN command
+# Fixes non-zero return (139) during the next RUN command
 # Reference: https://stackoverflow.com/questions/54651121/alpine-docker-returned-a-non-zero-code-139
+# FROM alpine:3.8
 
 RUN apk add --update redis supervisor python-dev \
     py-pip \

@@ -112,8 +112,8 @@ class _TipboardDash(Dashboard):
             "data": json.dumps(p_data)
         }
 
-        # Disable trend line and update data
-        self._update_config("tileconfig", "weather_precipitation_precision", 'value={"seriesDefaults": {"trendline": {"show": false}}}')
+        # Disable trend line, set  and update data
+        self._update_config("tileconfig", "weather_precipitation_precision", 'value={"axes": {"yaxis": {"min": 0, "max": 1}}, "seriesDefaults": {"trendline": {"show": false}}}')
         self._update(data)
 
     def _update_general_weather_info(self, day_info, week_info):
