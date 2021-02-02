@@ -129,6 +129,7 @@ class _TipboardDash(Dashboard):
             "data": json.dumps(info_data)
         }
 
+        self._update_config("tileconfig", "weather_misc", 'value={"font_size": 38}') # Font size tuned for a specific display
         self._update(data)
 
     def _update_weather_alerts(self, alert_list):

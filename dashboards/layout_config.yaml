@@ -7,7 +7,7 @@ layout:
               tile_id: weather_main
               title: Temperature
               classes:
-        - col_2_of_4 flip-time-6:
+        - col_2_of_4 flip-time-8:
             - tile_template: listing
               tile_id: weather_precipitation
               title: Precipitation
@@ -21,7 +21,7 @@ layout:
         #       tile_id: weather_misc
         #       title: Weather Info
         #       classes:
-        - col_1_of_4 flip-time-6:
+        - col_1_of_4 flip-time-8:
             - tile_template: listing
               tile_id: weather_alerts
               title: Weather Alerts
