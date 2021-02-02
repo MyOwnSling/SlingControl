@@ -15,6 +15,13 @@ class ControlModule(object):
             self.value = value  # Value of measurand
             self.msg = msg  # Alert message (why is this measured value important)
 
+    class ReturnItem(object):
+        """ Class for structured return of collected data and associated interpreter function
+        """
+        def __init__(self, data, interpreter):
+            self.data = data  # Data collected by module run
+            self.interpreter = interpreter  # Function used to interpret collected data
+
     class ReportItem(object):
         """ Class for grouping data to be included in a report
         """

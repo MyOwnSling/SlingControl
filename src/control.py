@@ -1,14 +1,22 @@
 import os
 import time
+import sys
 from threading import Thread
 from queue import Queue
 
 from dashboards import dashboard
 from modules import module_list, ControlModule
 try:
-    from notifiers import notifier_list#, Notifier
+    from notifiers import notifier_list
 except ValueError as vex:
-            print("Notifier error: " + str(vex))
+    print("Notifier error: " + str(vex), file=sys.stderr)
+
+class JobReturn():
+    def __init__(self, module_config, return_data, queue_time):
+        self.modlue_config = module_config
+        self.return_data = return_data
+        self.queue_time = queue_time
+
 
 def run_job(module_instance, queue):
     """ Function used to wrap module functions for threading
@@ -20,7 +28,7 @@ def run_job(module_instance, queue):
 
     # Record polling period into new, easier to reference var
     period = module_instance.module_config['polling_period_seconds']
-    if period <= 0:  # Allow for quick disabling of a module (debug)
+    if period <= 0:  # Allow for disabling of a module
         return
 
     # Main thread loop
@@ -31,12 +39,10 @@ def run_job(module_instance, queue):
         # Do some work
         try:
             data = module_instance.get_data()  # Real work happens here (module data gathering)
-            queue.put((
-                module_instance.module_config, 
-                data,
-                time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime(start_time))))
+            job_data = JobReturn(module_instance.module_config, data, time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime(start_time)))
+            queue.put(job_data)
         except ValueError as vex:
-            print("Module error: " + str(vex))
+            print("Module error: " + str(vex), file=sys.stderr)
         
 
         # Record the elapsed (real) time and sleep for any remaining time in our period. 
@@ -49,13 +55,19 @@ def run_job(module_instance, queue):
 
 def handle_data(data):
     """
-    Placeholder data handler. Eventually, this should take the given data
-     and pass it on to the UI and/or other relevant location, potentially
-     based on the nature of the data.
+    Module data handler that takes data sent from a running module and calls any 
+     notifiers if alert text has been populated by a module while also supplying 
+     updates to any dashboards.
     """
 
-    module_data = data[1]
-    alert_items = module_data[1](module_data[0], dashboard)
+    # data.return_data: a ReturnItem object in ControlModule
+    module_data = data.return_data
+    alert_items = None
+    try:
+        alert_items = module_data.interpreter(module_data.data, dashboard)
+    except Exception as ex:
+        print("Data interpreter error: " + str(ex), file=sys.stderr)
+        return
 
     for alert in alert_items:
         print("ALERT: {} ({}) - {}".format(alert.measurand, alert.value, alert.msg))
@@ -63,7 +75,7 @@ def handle_data(data):
             for notifier in notifier_list:
                 notifier.notify(alert.measurand, "{}{}{}".format(alert.value, os.linesep, alert.msg))
         except ValueError as vex:
-            print("Notifier error: " + str(vex))
+            print("Notifier error: " + str(vex), file=sys.stderr)
 
 
 def main():
@@ -85,7 +97,7 @@ def main():
         try:
             handle_data(data_item)
         except Exception as ex:
-            print(ex)
+            print(ex, file=sys.stderr)
 
 if __name__ == "__main__":
     main()

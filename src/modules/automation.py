@@ -14,7 +14,7 @@ class _AutomationModule(ControlModule):
         data = dict()
 
         # Return the retrieved data along with an interpretation function
-        return (data, _AutomationModule._interpret_data)
+        return ControlModule.ReturnItem(data, _AutomationModule._interpret_data)
 
     @staticmethod
     def _interpret_data(data):

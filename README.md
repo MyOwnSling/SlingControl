@@ -21,6 +21,7 @@ All application code and supporting software are intended to be installed inside
 Keepassxc is used to securely store secrets such as passwords, API keys, etc. Required secrets must be populated in an associated Keepass database.
 
 # Getting Started
+**Note:** the included core modules are empty and will do nothing out of the box; you will have to write something first.
 1. cd SlingControl/docker
 2. Run **./run-container <path to keepass database (kdbx file)> -c** and enter database password when prompted
 3. Wait for the build to complete; the container will start running afterward (omit the **-c** from the above command to run without rebuilding)
