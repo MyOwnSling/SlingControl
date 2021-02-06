@@ -1,6 +1,7 @@
 import os
 import time
 import sys
+import logging
 from threading import Thread
 from queue import Queue
 
@@ -13,12 +14,36 @@ except ValueError as vex:
 
 class JobReturn():
     def __init__(self, module_config, return_data, queue_time):
-        self.modlue_config = module_config
+        self.module_config = module_config
         self.return_data = return_data
         self.queue_time = queue_time
 
 
-def run_job(module_instance, queue):
+def init_logger(log_file):
+    # create logger with 'spam_application'
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(log_file)
+    fh.setLevel(logging.INFO)
+    # create console handler with a higher log level
+    sh = logging.StreamHandler(sys.stderr)
+    sh.setLevel(logging.ERROR)
+    sh1 = logging.StreamHandler(sys.stdout)
+    sh1.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    sh.setFormatter(formatter)
+    sh1.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(sh)
+    logger.addHandler(sh1)
+    return logger
+
+
+def run_job(module_instance, queue, logger):
     """ Function used to wrap module functions for threading
     """
 
@@ -42,7 +67,7 @@ def run_job(module_instance, queue):
             job_data = JobReturn(module_instance.module_config, data, time.strftime("%Y.%m.%d-%H.%M.%S", time.localtime(start_time)))
             queue.put(job_data)
         except ValueError as vex:
-            print("Module error: " + str(vex), file=sys.stderr)
+            logger.error("Module error: " + str(vex))
         
 
         # Record the elapsed (real) time and sleep for any remaining time in our period. 
@@ -53,7 +78,7 @@ def run_job(module_instance, queue):
             time.sleep(period - elapsed)
 
 
-def handle_data(data):
+def handle_data(data, logger):
     """
     Module data handler that takes data sent from a running module and calls any 
      notifiers if alert text has been populated by a module while also supplying 
@@ -66,38 +91,44 @@ def handle_data(data):
     try:
         alert_items = module_data.interpreter(module_data.data, dashboard)
     except Exception as ex:
-        print("Data interpreter error: " + str(ex), file=sys.stderr)
+        logger.error("Data interpreter error: " + str(ex))
         return
 
     for alert in alert_items:
-        print("ALERT: {} ({}) - {}".format(alert.measurand, alert.value, alert.msg))
+        logger.debug("ALERT: {} ({}) - {}".format(alert.measurand, alert.value, alert.msg))
         try:
             for notifier in notifier_list:
                 notifier.notify(alert.measurand, "{}{}{}".format(alert.value, os.linesep, alert.msg))
         except ValueError as vex:
-            print("Notifier error: " + str(vex), file=sys.stderr)
+            logger.error("Notifier error: " + str(vex))
 
 
 def main():
 
+    # Initialize logger
+    logger = init_logger('/var/log/slingcontrol.log')
+    logger.info("SlingControl started")
+
     # Setup threading resources
     thread_pool = []  # Array used to store our threads (one thread per module)
     data_queue = Queue()  # Thread-safe queue used to process data sent back from the module threads
+    logger.debug("Setup threading resources")
 
     # Create a thread for each module and start it
     for module in module_list:
-        print("Loading {}".format(module.module_config["display_name"]))
-        thread = Thread(target=run_job, args=(module, data_queue), name=module.module_config["module_name"])
+        logger.info("Loading {}".format(module.module_config["display_name"]))
+        thread = Thread(target=run_job, args=(module, data_queue, logger), name=module.module_config["module_name"])
         thread.start()
         thread_pool.append(thread)
     
     # Monitoring and queue handling
     while True:
         data_item = data_queue.get()
+        logger.debug(f"Processing module event for {data_item.module_config['display_name']}")
         try:
-            handle_data(data_item)
+            handle_data(data_item, logger)
         except Exception as ex:
-            print(ex, file=sys.stderr)
+            logger.error(ex)
 
 if __name__ == "__main__":
     main()
